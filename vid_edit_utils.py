@@ -487,29 +487,10 @@ def combine_mp4_and_sub_into_mkv(in_mp4_path, in_sub_path, out_mkv_path):
 
 
 
-def burn_subs_into_vid(in_vid_path, in_sub_path, out_vid_path):
+def burn_subs_into_vid(in_vid_path, in_sub_path, out_vid_path, sub_pos_tup = ("center", "bottom"), font_name = 'Arial', font_size = 24, font_color = 'white'):
     if in_vid_path != out_vid_path:
         fsu.delete_if_exists(out_vid_path)
     Path(out_vid_path).parent.mkdir(parents=True, exist_ok=True)
-
-    # escaped_in_sub_path = in_sub_path.translate(str.maketrans({"-":  r"\-",
-    #                                       "]":  r"\]",
-    #                                       "'": r"\'",
-    #                                       ":": r"\:",
-    #                                     "\\": r"/",
-
-    #                                       "/": r"\\",
-    #                                       "^":  r"\^",
-    #                                       "$":  r"\$",
-    #                                       "*":  r"\*",
-    #                                       ".":  r"\."}))
-    # print(f"{escaped_in_sub_path=}")
-
-
-    # # cmd = f'ffmpeg -i "{in_vid_path}" -vf subtitles="{in_sub_path}" "{out_vid_path}"'
-    # cmd = f'ffmpeg -i "{in_vid_path}" -vf subtitles="{escaped_in_sub_path}" "{out_vid_path}"'
-    # print(f"Running {cmd}...")
-    # sp.call(cmd, shell=True)
 
     # # Load the video file
     # video = VideoFileClip(in_vid_path)
@@ -540,7 +521,9 @@ def burn_subs_into_vid(in_vid_path, in_sub_path, out_vid_path):
 
 
     
-    generator = lambda txt: TextClip(txt, font='Arial', fontsize=24, color='white')
+    # generator = lambda txt: TextClip(txt, font='Arial', fontsize=font_size, color='white')
+    generator = lambda txt: TextClip(txt, font=font_name, fontsize=font_size, color=font_color)
+    # generator = lambda txt: TextClip(txt, font='Arial', fontsize=font_size)
     # subs = [((0, 4), 'subs1'),
     #         ((4, 9), 'subs2'),
     #         ((9, 12), 'subs3'),
@@ -551,7 +534,6 @@ def burn_subs_into_vid(in_vid_path, in_sub_path, out_vid_path):
 
     video = VideoFileClip(in_vid_path)
 
-    fontsize = 24
     subtitles = SubtitlesClip(in_sub_path, generator)
     # subtitles = subtitles.set_font("Arial", size=fontsize)
     # subtitles = subtitles.set_position(("center", video.size[1] - (fontsize * 2)))
@@ -559,7 +541,8 @@ def burn_subs_into_vid(in_vid_path, in_sub_path, out_vid_path):
 
 
     # result = CompositeVideoClip([video, subtitles.set_pos(('center','bottom'))])
-    result = CompositeVideoClip([video, subtitles.set_pos(('center',230))])
+    # result = CompositeVideoClip([video, subtitles.set_pos(('center',230))])
+    result = CompositeVideoClip([video, subtitles.set_pos(sub_pos_tup)])
 
     result.write_videofile(out_vid_path, fps=video.fps, temp_audiofile="temp-audio.m4a", remove_temp=True, codec="libx264", audio_codec="aac")
 
