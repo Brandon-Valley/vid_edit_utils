@@ -536,17 +536,30 @@ def burn_subs_into_vid(in_vid_path, in_sub_path, out_vid_path):
     # video.write_videofile(out_vid_path, fps=video.fps)
 
 
+
+
+
     
     generator = lambda txt: TextClip(txt, font='Arial', fontsize=24, color='white')
-    subs = [((0, 4), 'subs1'),
-            ((4, 9), 'subs2'),
-            ((9, 12), 'subs3'),
-            ((12, 16), 'subs4')]
+    # subs = [((0, 4), 'subs1'),
+    #         ((4, 9), 'subs2'),
+    #         ((9, 12), 'subs3'),
+    #         ((12, 16), 'subs4')]
 
-    subtitles = SubtitlesClip(subs, generator)
+    # subtitles = SubtitlesClip(subs, generator)
+
 
     video = VideoFileClip(in_vid_path)
-    result = CompositeVideoClip([video, subtitles.set_pos(('center','bottom'))])
+
+    fontsize = 24
+    subtitles = SubtitlesClip(in_sub_path, generator)
+    # subtitles = subtitles.set_font("Arial", size=fontsize)
+    # subtitles = subtitles.set_position(("center", video.size[1] - (fontsize * 2)))
+    # subtitles = subtitles.set_position(("center", 333))
+
+
+    # result = CompositeVideoClip([video, subtitles.set_pos(('center','bottom'))])
+    result = CompositeVideoClip([video, subtitles.set_pos(('center',230))])
 
     result.write_videofile(out_vid_path, fps=video.fps, temp_audiofile="temp-audio.m4a", remove_temp=True, codec="libx264", audio_codec="aac")
 
@@ -615,8 +628,12 @@ if __name__ == "__main__":
     #                     out_vid_path = "C:/tmp/burn_test/o.mp4")
 
 
-    burn_subs_into_vid(in_vid_path = "C:/tmp/burn_test/Family_Guy__Peter_Gets_a_Parrot__Clip____TBS/01_46__Family_Guy__Peter_Gets_a_Parrot__Clip____TBS__tvh_768_.mp4",
-                        in_sub_path = "C:/tmp/burn_test/Family_Guy__Peter_Gets_a_Parrot__Clip____TBS/01_46__Family_Guy__Peter_Gets_a_Parrot__Clip____TBS__tvh_768_.srt", 
+    # burn_subs_into_vid(in_vid_path = "C:/tmp/burn_test/Family_Guy__Peter_Gets_a_Parrot__Clip____TBS/01_46__Family_Guy__Peter_Gets_a_Parrot__Clip____TBS__tvh_768_.mp4",
+    #                     in_sub_path = "C:/tmp/burn_test/Family_Guy__Peter_Gets_a_Parrot__Clip____TBS/01_46__Family_Guy__Peter_Gets_a_Parrot__Clip____TBS__tvh_768_.srt", 
+    #                     out_vid_path = "C:/tmp/burn_test/o.mp4")
+
+    burn_subs_into_vid(in_vid_path = "C:/tmp/burn_test/short_cosby_w_subs/short_cosby_w_subs.mp4",
+                        in_sub_path = "C:/tmp/burn_test/short_cosby_w_subs/short_cosby_w_subs.srt", 
                         out_vid_path = "C:/tmp/burn_test/o.mp4")
 
 
