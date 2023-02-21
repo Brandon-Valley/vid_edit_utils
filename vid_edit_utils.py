@@ -391,11 +391,11 @@ def embed_sub_file_into_vid_file(sub_file_path, in_vid_path, out_vid_path):
     ffmpeg.concat(video.filter("subtitles", os.path.abspath(sub_file_path)), audio, v=1, a=1).output(out_vid_path).run()
     if file_not_exist_msg(out_vid_path): raise FileNotFoundError(file_not_exist_msg(out_vid_path)) # Raise Error if output not created
 
-def burn_subs_into_vid(sub_file_path, in_vid_path, out_vid_path):
-    cmd = f"ffmpeg -i {in_vid_path} -vf subtitles={sub_file_path} {out_vid_path}"
-    print(f"Running {cmd}...")
-    sp.call(cmd, shell=True)
-    if file_not_exist_msg(out_vid_path): raise FileNotFoundError(file_not_exist_msg(out_vid_path)) # Raise Error if output not created
+# def burn_subs_into_vid(sub_file_path, in_vid_path, out_vid_path):
+#     cmd = f"ffmpeg -i {in_vid_path} -vf subtitles={sub_file_path} {out_vid_path}"
+#     print(f"Running {cmd}...")
+#     sp.call(cmd, shell=True)
+#     if file_not_exist_msg(out_vid_path): raise FileNotFoundError(file_not_exist_msg(out_vid_path)) # Raise Error if output not created
 
 
 # TODO move to subtitle utils?
@@ -487,68 +487,27 @@ def combine_mp4_and_sub_into_mkv(in_mp4_path, in_sub_path, out_mkv_path):
 
 
 
-def burn_subs_into_vid(in_vid_path, in_sub_path, out_vid_path, sub_pos_tup = ("center", "bottom"), font_name = 'Arial', font_size = 24, font_color = 'white'):
+def burn_subs_into_vid(in_vid_path, in_sub_path, out_vid_path, 
+                       sub_pos_tup = ("center", "bottom"), font_name = 'Arial', font_size = 24, font_color = 'white', stroke_color = 'black', stroke_width = 1, num_threads = 8):
     if in_vid_path != out_vid_path:
         fsu.delete_if_exists(out_vid_path)
     Path(out_vid_path).parent.mkdir(parents=True, exist_ok=True)
 
-    # # Load the video file
-    # video = VideoFileClip(in_vid_path)
-
-    # print(f"{Path(in_sub_path)=}")
-    # print(f"{Path(in_sub_path).exists()=}")
-
-    # # Load the subtitle file
-    # subtitles = SubtitlesClip(in_sub_path)
-    # print(f"{subtitles=}")
-
-    # # # Set the height and font size of the subtitles
-    # # fontsize = 24
-    # # subtitles = subtitles.set_font("Arial", size=fontsize)
-
-    # # # Set the position of the subtitles
-    # # subtitles = subtitles.set_position(("center", video.size[1] - (fontsize * 2)))
-
-    # # Combine the video and subtitles
-    # video = video.set_duration(subtitles.duration).add_mask().set_position(("center", "center"))
-    # # video = video.set_mask(subtitles)
-
-    # # Export the final video
-    # video.write_videofile(out_vid_path, fps=video.fps)
-
-
-
-
-
-    
-    # generator = lambda txt: TextClip(txt, font='Arial', fontsize=font_size, color='white')
-    generator = lambda txt: TextClip(txt, font=font_name, fontsize=font_size, color=font_color)
-    # generator = lambda txt: TextClip(txt, font='Arial', fontsize=font_size)
-    # subs = [((0, 4), 'subs1'),
-    #         ((4, 9), 'subs2'),
-    #         ((9, 12), 'subs3'),
-    #         ((12, 16), 'subs4')]
-
-    # subtitles = SubtitlesClip(subs, generator)
-
 
     video = VideoFileClip(in_vid_path)
 
+    generator = lambda txt: TextClip(txt, font=font_name, fontsize=font_size, color=font_color, stroke_color='black', stroke_width=stroke_width, print_cmd=True)
+
     subtitles = SubtitlesClip(in_sub_path, generator)
-    # subtitles = subtitles.set_font("Arial", size=fontsize)
-    # subtitles = subtitles.set_position(("center", video.size[1] - (fontsize * 2)))
-    # subtitles = subtitles.set_position(("center", 333))
 
-
-    # result = CompositeVideoClip([video, subtitles.set_pos(('center','bottom'))])
-    # result = CompositeVideoClip([video, subtitles.set_pos(('center',230))])
     result = CompositeVideoClip([video, subtitles.set_pos(sub_pos_tup)])
 
+    # Currently set to output highest quality and prioritize speed over final file size
     # preset="ultrafast" does not affect quality, just gets it done faster while creating larger file
-    # TODO threads
-    result.write_videofile(out_vid_path, fps=video.fps, temp_audiofile="temp-audio.m4a", remove_temp=True, codec="libx264", audio_codec="aac", preset="ultrafast",
-    # result.write_videofile(out_vid_path, fps=video.fps, temp_audiofile="temp-audio.m4a", remove_temp=True, codec="mpeg4", audio_codec="aac", preset="ultrafast",
+    result.write_videofile(out_vid_path, fps=video.fps, temp_audiofile="temp-audio.m4a", remove_temp=True, codec="libx264", audio_codec="aac",
+                           preset="ultrafast",
                            bitrate='8000k',
+                           threads = num_threads,
                            ffmpeg_params = ['-crf', '0'])
 
 
@@ -620,8 +579,12 @@ if __name__ == "__main__":
     #                     in_sub_path = "C:/tmp/burn_test/Family_Guy__Peter_Gets_a_Parrot__Clip____TBS/01_46__Family_Guy__Peter_Gets_a_Parrot__Clip____TBS__tvh_768_.srt", 
     #                     out_vid_path = "C:/tmp/burn_test/o.mp4")
 
-    burn_subs_into_vid(in_vid_path = "C:/tmp/burn_test/Family_Guy__Bill_Cosby__Clip____TBS - Copy/Family_Guy__Bill_Cosby__Clip____TBS.mp4",
-                        in_sub_path = "C:/tmp/burn_test/Family_Guy__Bill_Cosby__Clip____TBS - Copy/Family_Guy__Bill_Cosby__Clip____TBS.srt", 
+    # burn_subs_into_vid(in_vid_path = "C:/tmp/burn_test/Family_Guy__Bill_Cosby__Clip____TBS - Copy/Family_Guy__Bill_Cosby__Clip____TBS.mp4",
+    #                     in_sub_path = "C:/tmp/burn_test/Family_Guy__Bill_Cosby__Clip____TBS - Copy/Family_Guy__Bill_Cosby__Clip____TBS.srt", 
+    #                     out_vid_path = "C:/tmp/burn_test/o.mp4")
+
+    burn_subs_into_vid(in_vid_path = "C:/tmp/burn_test/Family_Guy__Bill_Cosby__Clip____TBS/00_30__Family_Guy__Bill_Cosby__Clip____TBS__tvh_806_.mp4",
+                        in_sub_path = "C:/tmp/burn_test/Family_Guy__Bill_Cosby__Clip____TBS/00_30__Family_Guy__Bill_Cosby__Clip____TBS__tvh_806_.srt", 
                         out_vid_path = "C:/tmp/burn_test/o.mp4")
 
     # burn_subs_into_vid(in_vid_path = "C:/tmp/burn_test/short_cosby_w_subs/short_cosby_w_subs.mp4",
