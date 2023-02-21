@@ -544,7 +544,12 @@ def burn_subs_into_vid(in_vid_path, in_sub_path, out_vid_path, sub_pos_tup = ("c
     # result = CompositeVideoClip([video, subtitles.set_pos(('center',230))])
     result = CompositeVideoClip([video, subtitles.set_pos(sub_pos_tup)])
 
-    result.write_videofile(out_vid_path, fps=video.fps, temp_audiofile="temp-audio.m4a", remove_temp=True, codec="libx264", audio_codec="aac")
+    # preset="ultrafast" does not affect quality, just gets it done faster while creating larger file
+    # TODO threads
+    result.write_videofile(out_vid_path, fps=video.fps, temp_audiofile="temp-audio.m4a", remove_temp=True, codec="libx264", audio_codec="aac", preset="ultrafast",
+    # result.write_videofile(out_vid_path, fps=video.fps, temp_audiofile="temp-audio.m4a", remove_temp=True, codec="mpeg4", audio_codec="aac", preset="ultrafast",
+                           bitrate='8000k',
+                           ffmpeg_params = ['-crf', '0'])
 
 
 
@@ -615,9 +620,13 @@ if __name__ == "__main__":
     #                     in_sub_path = "C:/tmp/burn_test/Family_Guy__Peter_Gets_a_Parrot__Clip____TBS/01_46__Family_Guy__Peter_Gets_a_Parrot__Clip____TBS__tvh_768_.srt", 
     #                     out_vid_path = "C:/tmp/burn_test/o.mp4")
 
-    burn_subs_into_vid(in_vid_path = "C:/tmp/burn_test/short_cosby_w_subs/short_cosby_w_subs.mp4",
-                        in_sub_path = "C:/tmp/burn_test/short_cosby_w_subs/short_cosby_w_subs.srt", 
+    burn_subs_into_vid(in_vid_path = "C:/tmp/burn_test/Family_Guy__Bill_Cosby__Clip____TBS - Copy/Family_Guy__Bill_Cosby__Clip____TBS.mp4",
+                        in_sub_path = "C:/tmp/burn_test/Family_Guy__Bill_Cosby__Clip____TBS - Copy/Family_Guy__Bill_Cosby__Clip____TBS.srt", 
                         out_vid_path = "C:/tmp/burn_test/o.mp4")
+
+    # burn_subs_into_vid(in_vid_path = "C:/tmp/burn_test/short_cosby_w_subs/short_cosby_w_subs.mp4",
+    #                     in_sub_path = "C:/tmp/burn_test/short_cosby_w_subs/short_cosby_w_subs.srt", 
+    #                     out_vid_path = "C:/tmp/burn_test/o.mp4")
 
 
     # d = ffprobe_to_d("C:/tmp/S05E11__Family_Guy__Muppets__Clip____TBS.mkv")
