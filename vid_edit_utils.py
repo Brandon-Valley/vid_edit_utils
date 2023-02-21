@@ -1,5 +1,9 @@
 import json
-from sms.logger import json_logger as ju
+# from sms.logger import json_logger as ju
+
+from moviepy.video.io.VideoFileClip import VideoFileClip
+from moviepy.video.tools.subtitles import SubtitlesClip
+from moviepy.editor import *
 
 from typing import NamedTuple
 
@@ -25,7 +29,7 @@ from PIL import ImageDraw
 import PIL.ImageFont
 import PIL.ImageOps
 
-from sms.file_system_utils import file_system_utils as fsu
+from usms.file_system_utils import file_system_utils as fsu
 
 
 # TODO add something like this to check input and MOST IMPORTANTLY output vids:      if file_not_exist_msg(in_vid_path): raise Exception(file_not_exist_msg(in_vid_path)) # Confirm input vid exists
@@ -445,6 +449,113 @@ def combine_mp4_and_sub_into_mkv(in_mp4_path, in_sub_path, out_mkv_path):
     if file_not_exist_msg(out_mkv_path): raise FileNotFoundError(file_not_exist_msg(out_mkv_path)) # Raise Error if output not created
 
 
+# def burn_subs_into_vid(in_vid_path, in_sub_path, out_vid_path):
+#     if in_vid_path != out_vid_path:
+#         fsu.delete_if_exists(out_vid_path)
+#     Path(out_vid_path).parent.mkdir(parents=True, exist_ok=True)
+
+#     # fsu.copy_object_to_path(in_vid_path, out_vid_path)
+
+#     burn_py_path = "C:/Users/Brandon/Documents/Personal_Projects/tik_tb_vid/src/sms/vid_edit_utils/burn-captions/burn.py" # TODO
+#     # cmd = f"python {burn_py_path} --video {out_vid_path} --srt {in_sub_path}"
+#     cmd = f"python {burn_py_path} --video {in_vid_path} --srt {in_sub_path} --out {out_vid_path}"
+#     print(f"Running {cmd}...")
+#     sp.call(cmd, shell=True)
+#     if file_not_exist_msg(out_vid_path): raise FileNotFoundError(file_not_exist_msg(out_vid_path)) # Raise Error if output not created
+
+
+# def burn_subs_into_vid(in_vid_path, in_sub_path, out_vid_path):
+#     if in_vid_path != out_vid_path:
+#         fsu.delete_if_exists(out_vid_path)
+#     Path(out_vid_path).parent.mkdir(parents=True, exist_ok=True)
+
+#     # Subtitle settings
+#     subtitle_font = "Arial"
+#     subtitle_size = "24"
+#     subtitle_color = "white"
+#     subtitle_position = "h=main_h/2-text_h/2:y=40"
+
+#     cmd = ['ffmpeg', '-i', in_vid_path, '-vf',
+#            f"subtitles={in_sub_path}:force_style='Fontname={subtitle_font},Fontsize={subtitle_size},PrimaryColour=&H{subtitle_color}&,Alignment=5,{subtitle_position}'",
+#            '-c:a', 'copy', out_vid_path, "-y"]
+
+#     print(f"Running {cmd}...")
+#     sp.run(cmd)
+#     if file_not_exist_msg(out_vid_path): raise FileNotFoundError(file_not_exist_msg(out_vid_path)) # Raise Error if output not created
+
+
+
+
+
+def burn_subs_into_vid(in_vid_path, in_sub_path, out_vid_path):
+    if in_vid_path != out_vid_path:
+        fsu.delete_if_exists(out_vid_path)
+    Path(out_vid_path).parent.mkdir(parents=True, exist_ok=True)
+
+    # escaped_in_sub_path = in_sub_path.translate(str.maketrans({"-":  r"\-",
+    #                                       "]":  r"\]",
+    #                                       "'": r"\'",
+    #                                       ":": r"\:",
+    #                                     "\\": r"/",
+
+    #                                       "/": r"\\",
+    #                                       "^":  r"\^",
+    #                                       "$":  r"\$",
+    #                                       "*":  r"\*",
+    #                                       ".":  r"\."}))
+    # print(f"{escaped_in_sub_path=}")
+
+
+    # # cmd = f'ffmpeg -i "{in_vid_path}" -vf subtitles="{in_sub_path}" "{out_vid_path}"'
+    # cmd = f'ffmpeg -i "{in_vid_path}" -vf subtitles="{escaped_in_sub_path}" "{out_vid_path}"'
+    # print(f"Running {cmd}...")
+    # sp.call(cmd, shell=True)
+
+    # # Load the video file
+    # video = VideoFileClip(in_vid_path)
+
+    # print(f"{Path(in_sub_path)=}")
+    # print(f"{Path(in_sub_path).exists()=}")
+
+    # # Load the subtitle file
+    # subtitles = SubtitlesClip(in_sub_path)
+    # print(f"{subtitles=}")
+
+    # # # Set the height and font size of the subtitles
+    # # fontsize = 24
+    # # subtitles = subtitles.set_font("Arial", size=fontsize)
+
+    # # # Set the position of the subtitles
+    # # subtitles = subtitles.set_position(("center", video.size[1] - (fontsize * 2)))
+
+    # # Combine the video and subtitles
+    # video = video.set_duration(subtitles.duration).add_mask().set_position(("center", "center"))
+    # # video = video.set_mask(subtitles)
+
+    # # Export the final video
+    # video.write_videofile(out_vid_path, fps=video.fps)
+
+
+    
+    generator = lambda txt: TextClip(txt, font='Arial', fontsize=24, color='white')
+    subs = [((0, 4), 'subs1'),
+            ((4, 9), 'subs2'),
+            ((9, 12), 'subs3'),
+            ((12, 16), 'subs4')]
+
+    subtitles = SubtitlesClip(subs, generator)
+
+    video = VideoFileClip(in_vid_path)
+    result = CompositeVideoClip([video, subtitles.set_pos(('center','bottom'))])
+
+    result.write_videofile(out_vid_path, fps=video.fps, temp_audiofile="temp-audio.m4a", remove_temp=True, codec="libx264", audio_codec="aac")
+
+
+
+    if file_not_exist_msg(out_vid_path): raise FileNotFoundError(file_not_exist_msg(out_vid_path)) # Raise Error if output not created
+
+
+
 
 class FFProbeResult(NamedTuple):
     return_code: int
@@ -494,10 +605,19 @@ if __name__ == "__main__":
     # import batch_make_tb_vids
     # batch_make_tb_vids.main()
 
-    combine_mp4_and_sub_into_mkv(in_mp4_path = "C:/tmp/embed_mp4/Family_Guy__Back_To_The_Pilot__Clip____TBS/Family_Guy__Back_To_The_Pilot__Clip____TBS.mp4",
-     in_sub_path = "C:/tmp/embed_mp4/Family_Guy__Back_To_The_Pilot__Clip____TBS/Family_Guy__Back_To_The_Pilot__Clip____TBS.en-orig.srt",
-      out_mkv_path = "C:/tmp/embed_mp4/Family_Guy__Back_To_The_Pilot__Clip____TBS/o.mp4")
+    # combine_mp4_and_sub_into_mkv(in_mp4_path = "C:/tmp/embed_mp4/Family_Guy__Back_To_The_Pilot__Clip____TBS/Family_Guy__Back_To_The_Pilot__Clip____TBS.mp4",
+    #  in_sub_path = "C:/tmp/embed_mp4/Family_Guy__Back_To_The_Pilot__Clip____TBS/Family_Guy__Back_To_The_Pilot__Clip____TBS.en-orig.srt",
+    #   out_mkv_path = "C:/tmp/embed_mp4/Family_Guy__Back_To_The_Pilot__Clip____TBS/o.mp4")
 
+
+    # burn_subs_into_vid(in_vid_path = "C:/tmp/burn_test/Family_Guy__Peter_Gets_a_Parrot__Clip____TBS/01_46__Family_Guy__Peter_Gets_a_Parrot__Clip____TBS__tvh_768_.mp4",
+    #                     in_sub_path = "C:/tmp/burn_test/Family_Guy__Peter_Gets_a_Parrot__Clip____TBS/01_46__Family_Guy__Peter_Gets_a_Parrot__Clip____TBS__tvh_768_.srt", 
+    #                     out_vid_path = "C:/tmp/burn_test/o.mp4")
+
+
+    burn_subs_into_vid(in_vid_path = "C:/tmp/burn_test/Family_Guy__Peter_Gets_a_Parrot__Clip____TBS/01_46__Family_Guy__Peter_Gets_a_Parrot__Clip____TBS__tvh_768_.mp4",
+                        in_sub_path = "C:/tmp/burn_test/Family_Guy__Peter_Gets_a_Parrot__Clip____TBS/01_46__Family_Guy__Peter_Gets_a_Parrot__Clip____TBS__tvh_768_.srt", 
+                        out_vid_path = "C:/tmp/burn_test/o.mp4")
 
 
     # d = ffprobe_to_d("C:/tmp/S05E11__Family_Guy__Muppets__Clip____TBS.mkv")
